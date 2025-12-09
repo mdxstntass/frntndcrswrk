@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>After School Lessons</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+    <script>
+      src="https://kit.fontawesome.com/ec5e76a6c7.js"
+      crossorigin="anonymous"
+      defer
+    </script>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Lesson shop</p>
+          <h1>Pick, sort, add, checkout.</h1>
+          <p class="muted">
+            Browse after-school classes, manage your basket, and place an order
+            in a few steps.
+          </p>
+        </div>
+        <button class="ghost" @click="goTo('cart')" :disabled="!cartCount">
+          <i class="fa-solid fa-basket-shopping"></i>
+          Cart ({{ cartCount }})
+        </button>
+      </header>
+
+      <main>
+        <!-- Catalog -->
+        <section v-show="page === 'catalog'" class="panel">
+          <form class="controls" @submit.prevent>
+            <input
+              v-model="searchTerm"
+              @input="onSearch"
+              type="search"
+              placeholder="Search lessons…"
+              aria-label="Search lessons"
+            />
+            <div class="control-row">
+              <label>
+                Sort by
+                <select v-model="sortKey">
+                  <option value="subject-asc">Subject A → Z</option>
+                  <option value="subject-desc">Subject Z → A</option>
+                  <option value="location-asc">Location A → Z</option>
+                  <option value="location-desc">Location Z → A</option>
+                  <option value="price-asc">Price low → high</option>
+                  <option value="price-desc">Price high → low</option>
+                  <option value="spaces-asc">Spaces low → high</option>
+                  <option value="spaces-desc">Spaces high → low</option>
+                </select>
+              </label>
+
+              <label>
+                Filter
+                <select v-model="filterKey">
+                  <option value="all">All lessons</option>
+                  <option value="available">In stock</option>
+                  <option value="soldout">Sold out</option>
+                </select>
+              </label>
+            </div>
+            <div class="control-row">
+              <label>
+                Min price
+                <input
+                  type="number"
+                  min="0"
+                  v-model.number="minPrice"
+                  placeholder="0"
+                />
+              </label>
+              <label>
+                Max price
+                <input
+                  type="number"
+                  min="0"
+                  v-model.number="maxPrice"
+                  placeholder="500"
+                />
+              </label>
+              <label>
+                Location
+                <select v-model="locationFilter">
+                  <option value="">Any</option>
+                  <option v-for="loc in locationOptions" :key="loc" :value="loc">
+                    {{ loc }}
+                  </option>
+                </select>
+              </label>
+            </div>
+          </form>
+
+          <section class="grid">
+            <article
+              class="card"
+              v-for="lesson in displayedLessons"
+              :key="lesson._id"
+            >
+              <div class="card-head">
+                <div class="icon-circle">
+                  <i class="fa-solid fa-book-open"></i>
+                </div>
+                <div>
+                  <p class="eyebrow">{{ lesson.subject }}</p>
+                  <h2>{{ lesson.description }}</h2>
+                </div>
+              </div>
+              <p class="muted">Location: {{ lesson.location }}</p>
+              <p class="muted">Spaces left: {{ lesson.spaces }}</p>
+              <p class="price">£{{ Number(lesson.price || 0).toFixed(2) }}</p>
+              <div class="card-actions">
+                <button
+                  :disabled="!canAdd(lesson)"
+                  @click="addToCart(lesson)"
+                >
+                  {{ lesson.spaces > 0 ? 'Add to cart' : 'Sold out' }}
+                </button>
+                <div v-if="cartQuantity(lesson)" class="stepper">
+                  <button @click="decreaseFromCart(lesson)">-</button>
+                  <span>{{ cartQuantity(lesson) }}</span>
+                  <button :disabled="lesson.spaces <= 0" @click="addToCart(lesson)">
+                    +
+                  </button>
+                </div>
+              </div>
+            </article>
+          </section>
+          <p v-if="!displayedLessons.length" class="muted">
+            No lessons match your filters.
+          </p>
+        </section>
+
+        <!-- Cart -->
+        <section v-show="page === 'cart'" class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Cart</p>
+              <h2>Review your selection</h2>
+            </div>
+            <button class="ghost" @click="goTo('catalog')">
+              <i class="fa-solid fa-arrow-left"></i>
+              Back to catalog
+            </button>
+          </div>
+          <p class="muted" v-if="!cartCount">Add a lesson to start checkout.</p>
+          <ul class="cart-list" v-else>
+            <li v-for="item in cartSummary" :key="item._id">
+              <div>
+                <p class="eyebrow">{{ item.subject }}</p>
+                <p class="muted">{{ item.location }}</p>
+              </div>
+              <div class="stepper">
+                <button @click="decreaseFromCart(item)">-</button>
+                <span>{{ item.qty }}</span>
+                <button @click="addToCart(item)" :disabled="!item.canIncrease">
+                  +
+                </button>
+              </div>
+              <p class="price">£{{ (item.price * item.qty).toFixed(2) }}</p>
+            </li>
+          </ul>
+          <div class="panel-foot">
+            <p class="price">Total: £{{ cartTotal.toFixed(2) }}</p>
+            <div class="action-row">
+              <button class="ghost" @click="goTo('catalog')">Continue</button>
+              <button :disabled="!cartCount" @click="goTo('checkout')">
+                Checkout
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Checkout -->
+        <section v-show="page === 'checkout'" class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Details</p>
+              <h2>Who is ordering?</h2>
+            </div>
+            <button class="ghost" @click="goTo('cart')">
+              <i class="fa-solid fa-arrow-left"></i>
+              Back to cart
+            </button>
+          </div>
+          <form class="form" @submit.prevent="submitOrder">
+            <label>
+              Name
+              <input v-model="form.name" type="text" placeholder="name" />
+            </label>
+            <label>
+              Phone
+              <input v-model="form.phone" type="tel" placeholder="phone number" />
+            </label>
+            <label>
+              Email
+              <input v-model="form.email" type="email" placeholder="email" />
+            </label>
+            <label>
+              Address
+              <textarea
+                v-model="form.address"
+                placeholder="Street, city, country"
+              ></textarea>
+            </label>
+            <div class="action-row">
+              <button type="button" class="ghost" @click="goTo('cart')">
+                Back
+              </button>
+              <button type="submit" :disabled="!validCustomer || !cartCount">
+                Place order
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Success -->
+        <section v-show="page === 'success'" class="panel success">
+          <div class="success-icon">✓</div>
+          <h2>Order submitted</h2>
+          <p class="muted">Thanks for your order. Seats are now reserved.</p>
+          <div class="action-row">
+            <button @click="goTo('catalog')">Back to catalog</button>
+            <button class="ghost" @click="goTo('checkout')">Edit details</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./vue.js"></script>
+  </body>
+</html>
+
+
