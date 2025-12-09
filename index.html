@@ -1,19 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+  <!-- HEAD SECTION: Meta tags, external scripts, and stylesheets -->
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>After School Lessons</title>
+    <!-- Vue.js 2.7 framework for reactive UI -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+    <!-- Font Awesome icons library -->
     <script>
       src="https://kit.fontawesome.com/ec5e76a6c7.js"
       crossorigin="anonymous"
       defer
     </script>
+    <!-- Custom stylesheet -->
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <!-- MAIN APP CONTAINER: Vue.js root element -->
     <div id="app">
+      <!-- HEADER SECTION: Hero banner with title and cart button -->
       <header class="hero">
         <div>
           <p class="eyebrow">Lesson shop</p>
@@ -29,10 +35,13 @@
         </button>
       </header>
 
+      <!-- MAIN CONTENT AREA: Contains all page sections (catalog, cart, checkout, success) -->
       <main>
-        <!-- Catalog -->
+        <!-- CATALOG SECTION: Browse and filter available lessons -->
         <section v-show="page === 'catalog'" class="panel">
+          <!-- SEARCH AND FILTER CONTROLS: User can search, sort, and filter lessons -->
           <form class="controls" @submit.prevent>
+            <!-- Search input: Real-time search filtering -->
             <input
               v-model="searchTerm"
               @input="onSearch"
@@ -40,7 +49,9 @@
               placeholder="Search lessons…"
               aria-label="Search lessons"
             />
+            <!-- Sort and filter controls row -->
             <div class="control-row">
+              <!-- Sort dropdown: Order lessons by various criteria -->
               <label>
                 Sort by
                 <select v-model="sortKey">
@@ -55,6 +66,7 @@
                 </select>
               </label>
 
+              <!-- Filter dropdown: Show all, available, or sold out lessons -->
               <label>
                 Filter
                 <select v-model="filterKey">
@@ -64,7 +76,9 @@
                 </select>
               </label>
             </div>
+            <!-- Price range and location filter controls row -->
             <div class="control-row">
+              <!-- Minimum price filter -->
               <label>
                 Min price
                 <input
@@ -74,6 +88,7 @@
                   placeholder="0"
                 />
               </label>
+              <!-- Maximum price filter -->
               <label>
                 Max price
                 <input
@@ -83,6 +98,7 @@
                   placeholder="500"
                 />
               </label>
+              <!-- Location filter dropdown -->
               <label>
                 Location
                 <select v-model="locationFilter">
@@ -95,12 +111,15 @@
             </div>
           </form>
 
+          <!-- LESSONS GRID: Display filtered and sorted lessons as cards -->
           <section class="grid">
+            <!-- Individual lesson card: Shows lesson details and add to cart option -->
             <article
               class="card"
               v-for="lesson in displayedLessons"
               :key="lesson._id"
             >
+              <!-- Card header: Icon and lesson title -->
               <div class="card-head">
                 <div class="icon-circle">
                   <i class="fa-solid fa-book-open"></i>
@@ -110,9 +129,11 @@
                   <h2>{{ lesson.description }}</h2>
                 </div>
               </div>
+              <!-- Card body: Location, availability, and price information -->
               <p class="muted">Location: {{ lesson.location }}</p>
               <p class="muted">Spaces left: {{ lesson.spaces }}</p>
               <p class="price">£{{ Number(lesson.price || 0).toFixed(2) }}</p>
+              <!-- Card actions: Add to cart button and quantity stepper -->
               <div class="card-actions">
                 <button
                   :disabled="!canAdd(lesson)"
@@ -120,6 +141,7 @@
                 >
                   {{ lesson.spaces > 0 ? 'Add to cart' : 'Sold out' }}
                 </button>
+                <!-- Quantity stepper: Shows when item is already in cart -->
                 <div v-if="cartQuantity(lesson)" class="stepper">
                   <button @click="decreaseFromCart(lesson)">-</button>
                   <span>{{ cartQuantity(lesson) }}</span>
@@ -130,13 +152,15 @@
               </div>
             </article>
           </section>
+          <!-- Empty state message: Shown when no lessons match filters -->
           <p v-if="!displayedLessons.length" class="muted">
             No lessons match your filters.
           </p>
         </section>
 
-        <!-- Cart -->
+        <!-- CART SECTION: Review items before checkout -->
         <section v-show="page === 'cart'" class="panel">
+          <!-- Cart header: Title and navigation -->
           <div class="panel-head">
             <div>
               <p class="eyebrow">Cart</p>
@@ -147,13 +171,18 @@
               Back to catalog
             </button>
           </div>
+          <!-- Empty cart message -->
           <p class="muted" v-if="!cartCount">Add a lesson to start checkout.</p>
+          <!-- Cart items list: Display all items in the shopping cart -->
           <ul class="cart-list" v-else>
+            <!-- Individual cart item: Shows lesson info, quantity controls, and price -->
             <li v-for="item in cartSummary" :key="item._id">
+              <!-- Item details: Subject and location -->
               <div>
                 <p class="eyebrow">{{ item.subject }}</p>
                 <p class="muted">{{ item.location }}</p>
               </div>
+              <!-- Quantity stepper: Adjust item quantity in cart -->
               <div class="stepper">
                 <button @click="decreaseFromCart(item)">-</button>
                 <span>{{ item.qty }}</span>
@@ -161,9 +190,11 @@
                   +
                 </button>
               </div>
+              <!-- Item total price: Price × quantity -->
               <p class="price">£{{ (item.price * item.qty).toFixed(2) }}</p>
             </li>
           </ul>
+          <!-- Cart footer: Total price and checkout action buttons -->
           <div class="panel-foot">
             <p class="price">Total: £{{ cartTotal.toFixed(2) }}</p>
             <div class="action-row">
@@ -175,8 +206,9 @@
           </div>
         </section>
 
-        <!-- Checkout -->
+        <!-- CHECKOUT SECTION: Customer information form for order placement -->
         <section v-show="page === 'checkout'" class="panel">
+          <!-- Checkout header: Title and back navigation -->
           <div class="panel-head">
             <div>
               <p class="eyebrow">Details</p>
@@ -187,19 +219,24 @@
               Back to cart
             </button>
           </div>
+          <!-- Customer information form: Collects contact and delivery details -->
           <form class="form" @submit.prevent="submitOrder">
+            <!-- Name input field -->
             <label>
               Name
               <input v-model="form.name" type="text" placeholder="name" />
             </label>
+            <!-- Phone input field -->
             <label>
               Phone
               <input v-model="form.phone" type="tel" placeholder="phone number" />
             </label>
+            <!-- Email input field -->
             <label>
               Email
               <input v-model="form.email" type="email" placeholder="email" />
             </label>
+            <!-- Address textarea field -->
             <label>
               Address
               <textarea
@@ -207,6 +244,7 @@
                 placeholder="Street, city, country"
               ></textarea>
             </label>
+            <!-- Form action buttons: Navigation and submission -->
             <div class="action-row">
               <button type="button" class="ghost" @click="goTo('cart')">
                 Back
@@ -218,11 +256,13 @@
           </form>
         </section>
 
-        <!-- Success -->
+        <!-- SUCCESS SECTION: Order confirmation page after successful submission -->
         <section v-show="page === 'success'" class="panel success">
+          <!-- Success icon: Visual confirmation indicator -->
           <div class="success-icon">✓</div>
           <h2>Order submitted</h2>
           <p class="muted">Thanks for your order. Seats are now reserved.</p>
+          <!-- Success action buttons: Navigation options after order -->
           <div class="action-row">
             <button @click="goTo('catalog')">Back to catalog</button>
             <button class="ghost" @click="goTo('checkout')">Edit details</button>
@@ -231,6 +271,7 @@
       </main>
     </div>
 
+    <!-- VUE.JS APPLICATION SCRIPT: Main application logic and Vue instance -->
     <script src="./vue.js"></script>
   </body>
 </html>
