@@ -1,0 +1,130 @@
+# After School Lessons - Full Stack Application
+
+## Project Overview
+
+This is a full-stack web application that allows students and their parents to browse, search, and purchase after-school classes and activities. The application consists of:
+
+- **Front-End**: Built with Vue.js 2.7, providing a responsive user interface for browsing lessons, managing shopping cart, and placing orders
+- **Back-End**: Built with Express.js and Node.js, providing REST API endpoints for lesson management and order processing
+- **Database**: MongoDB Atlas for storing lessons and orders data
+
+## Features
+
+- Browse and search after-school lessons
+- Filter lessons by location, price range, and availability
+- Sort lessons by various criteria (subject, location, price, spaces)
+- Add lessons to shopping cart with real-time availability updates
+- Manage cart quantities and review selections
+- Submit orders with customer information
+- Responsive design with modern UI styling
+
+## Project Structure
+
+```
+crswrk25/
+├── frontend/          # Vue.js application
+│   ├── index.html    # Main HTML file
+│   ├── vue.js        # Vue.js application logic
+│   ├── styles.css    # Styling
+│   └── README.md     # This file
+└── backend/          # Express.js application (if applicable)
+    ├── server.js
+    ├── package.json
+    └── ...
+```
+
+## Required Links
+
+### Vue.js App
+
+- **[Vue.js App] GitHub Repository**: [Add your Vue.js GitHub repository link here]
+- **[Vue.js App] GitHub Pages**: [Add your GitHub Pages deployment link here]
+
+### Express.js App
+
+- **[Express.js App] GitHub Repository**: [Add your Express.js GitHub repository link here]
+- **[AWS (or render.com) Express.js App]**: [Add your deployed Express.js API link here (e.g., https://your-app.render.com/lessons)]
+
+## Submission Instructions
+
+When uploading your submission, please include the following in your zip file (maximum 10MB):
+
+### Required Files
+
+1. **Code folders**:
+   - Vue.js App folder (this frontend folder)
+   - Express.js App folder (do NOT include `node_modules` folder)
+
+2. **README file** (this file) with the links above filled in
+
+3. **MongoDB exports**:
+   - `lesson` collection exported from MongoDB Atlas
+   - `order` collection exported from MongoDB Atlas
+   
+   *Export instructions*: Use MongoDB Compass to export collections (see [MongoDB Compass Export Guide](https://docs.mongodb.com/compass/current/import-export#export-data-from-a-collection))
+
+4. **Postman requests**:
+   - Exported Postman collection containing all API requests
+   
+   *Export instructions*: See [Postman Export Guide](https://learning.postman.com/docs/getting-started/importing-and-exporting-data/#exporting-collections)
+
+### Text Area Submission
+
+When submitting via text area, please include the same information as requested in this README file.
+
+## Local Setup
+
+### Front-End Setup
+
+1. Open `index.html` in a web browser, or
+2. Use a local development server:
+   ```bash
+   # Using Python
+   python -m http.server 8000
+   
+   # Using Node.js http-server
+   npx http-server
+   ```
+
+3. Update the API base URL in `vue.js` if your backend runs on a different port:
+   ```javascript
+   const API_BASE_URL = "http://localhost:3000";
+   ```
+
+### Back-End Setup
+
+1. Navigate to the backend folder
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Configure MongoDB connection string in your environment variables
+4. Start the server:
+   ```bash
+   npm start
+   ```
+
+## API Endpoints
+
+The application uses the following REST API endpoints:
+
+- `GET /lessons` - Fetch all lessons
+- `GET /search?q={term}` - Search lessons by query term
+- `PUT /lessons/:id` - Update lesson availability (decrease/increase spaces)
+- `POST /orders` - Submit a new order
+
+## Technologies Used
+
+- **Front-End**: Vue.js 2.7, HTML5, CSS3
+- **Back-End**: Node.js, Express.js
+- **Database**: MongoDB Atlas
+- **Icons**: Font Awesome
+
+## Author
+
+[Your Name]
+
+## Course Information
+
+**Course**: Full Stack Development 2024-25 (CST3144)
+
