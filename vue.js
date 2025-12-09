@@ -324,7 +324,7 @@ new Vue({
        ======================================== */
     
     /**
-     * Navigate to a different page/view
+     * Navigate to a different page/view 
      * Updates the page data property to show/hide different sections
      */
     goTo(page) {
