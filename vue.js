@@ -1,5 +1,5 @@
 // Base URL for API - adjust if your backend runs on a different port
-const API_BASE_URL = "http://localhost:3003";
+const API_BASE_URL = "http://localhost:3000";
 
 // Helper function to handle fetch with callbacks
 function fetchWithCallback(url, options, callback) {
